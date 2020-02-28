@@ -16,7 +16,7 @@ public enum SortType {
         return this.sorter;
     }
 
-    public List<String> getValuesAsString() {
+    public static List<String> getValuesAsString() {
         List<String> list = new ArrayList<>();
 
         for (SortType type : SortType.values()) {
@@ -24,5 +24,18 @@ public enum SortType {
         }
 
         return list;
+    }
+
+    public static Sorter getSorterWithName(String displayableName) {
+        for (SortType s : values()) {
+            Sorter sorter = s.sorter;
+            if (sorter.getDisplayableName().equals(displayableName)) {
+                return sorter;
+            }
+        }
+
+        // This line should never be reached since the param entered only refers to existing
+        // sorters
+        return null;
     }
 }

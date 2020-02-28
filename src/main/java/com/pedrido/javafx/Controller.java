@@ -12,13 +12,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
     @FXML public Label graphLabel, arraySizeLabel;
-    @FXML public ComboBox<SortType> sortTypeComboBox;
+    @FXML public ComboBox<String> sortTypeComboBox;
     @FXML public Slider arraySizeSlider;
     @FXML public Button startButton;
 
@@ -28,8 +27,13 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         graphLabel.setText("");
 
-        ObservableList<SortType> list = FXCollections.observableArrayList(Arrays.asList(SortType.values()));
+        // Combo Box Setup
+        ObservableList<String> list = FXCollections.observableArrayList(SortType.getValuesAsString());
         sortTypeComboBox.setItems(list);
+        sortTypeComboBox.setOnAction(
+                e -> sorter = SortType.getSorterWithName(sortTypeComboBox.getSelectionModel().getSelectedItem()));
+
 
     }
+
 }

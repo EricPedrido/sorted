@@ -12,3 +12,7 @@
     -fx-font-size: 25px;
     -fx-font-weight: bold;
 }
+
+.small-text {
+    -fx-font-size: 15px;
+}
