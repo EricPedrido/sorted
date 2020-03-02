@@ -16,3 +16,7 @@
 .small-text {
     -fx-font-size: 15px;
 }
+
+.timer-label {
+    -fx-font-size: 35px;
+}
