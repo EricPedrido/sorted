@@ -23,14 +23,16 @@ public class Controller implements Initializable {
     @FXML public BarChart chart;
     @FXML public Spinner<Integer> sizeSpinner;
 
-    private final int MIN_SIZE = 1000;
-    private final int MAX_SIZE = 100000;
-    private final int STEP_SIZE = 100;
+    private final int MIN_SIZE = 10;
+    private final int MAX_SIZE = 1000;
+    private final int STEP_SIZE = 10;
 
     private Sorter sorter;
     private XYChart.Series series;
     private List<XYChart.Data> nums;
     private int arrSize;
+
+    //TODO SWITCH FROM CHARTS TO MANUALLY PAINTING RECTANGLES SINCE CHARTS ARE SLOW AT LARGE VALUES
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -39,6 +41,8 @@ public class Controller implements Initializable {
         chart.getData().add(series);
         nums = new ArrayList<>();
         arrSize = MIN_SIZE;
+
+        increaseArraySize(MIN_SIZE);
 
         // Combo Box Setup
         ObservableList<String> list = FXCollections.observableArrayList(SortType.getValuesAsString());
@@ -55,13 +59,37 @@ public class Controller implements Initializable {
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN_SIZE, MAX_SIZE, MIN_SIZE, STEP_SIZE));
         sizeSpinner.getValueFactory().setValue(MIN_SIZE);
         sizeSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue < arrSize) {
+                decreaseArraySize(newValue);
+            } else {
+                increaseArraySize(newValue);
+            }
             arrSize = newValue;
+
             updateText();
         });
+
+
     }
 
     private void updateText() {
         graphLabel.setText(sorter.getDisplayableName() + " - " + arrSize);
+    }
+
+    private void increaseArraySize(int newSize) {
+        for (int i = nums.size()+1; i <= newSize; i++) {
+            nums.add(new XYChart.Data<>(""+i, i));
+        }
+
+        updateChart();
+    }
+
+    private void decreaseArraySize(int newSize) {
+        for (int i = nums.size(); i > newSize; i--) {
+            nums.remove(nums.size()-1);
+        }
+
+        updateChart();
     }
 
     /**
@@ -70,9 +98,9 @@ public class Controller implements Initializable {
      * that will be sorted.
      */
     private void updateChart() {
-
         ObservableList<XYChart.Data> dataList = FXCollections.observableList(nums);
-        series.setData(dataList);
+        series.getData().clear();
+        series.getData().addAll(dataList);
     }
 
 
