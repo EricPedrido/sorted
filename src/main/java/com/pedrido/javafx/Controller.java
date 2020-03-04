@@ -65,7 +65,7 @@ public class Controller implements Initializable {
         });
 
         // Buttons Setup
-        startButton.setOnAction(e -> sorter.sort()); //TODO Visualise the sorting live
+        startButton.setOnAction(e -> sorter.sort(nums)); //TODO Visualise the sorting live
         randomizeButton.setOnAction(e -> randomize());
     }
 

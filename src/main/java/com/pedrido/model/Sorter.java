@@ -24,5 +24,5 @@ public abstract class Sorter {
         return this.displayableName;
     }
 
-    public abstract int[] sort();
+    public abstract void sort(int[] arr);
 }
