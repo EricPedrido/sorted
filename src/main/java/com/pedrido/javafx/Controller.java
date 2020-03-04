@@ -12,15 +12,21 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 import java.net.URL;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
-    @FXML public Label graphLabel, timerLabel;
-    @FXML public ComboBox<String> sortTypeComboBox;
-    @FXML public Button startButton;
-    @FXML public Spinner<Integer> sizeSpinner;
-    @FXML public Pane mainPane;
+    @FXML
+    public Label graphLabel, timerLabel;
+    @FXML
+    public ComboBox<String> sortTypeComboBox;
+    @FXML
+    public Button startButton, pseudocodeButton, randomizeButton;
+    @FXML
+    public Spinner<Integer> sizeSpinner;
+    @FXML
+    public Pane mainPane;
 
     private final int MIN_SIZE = 100;
     private final int MAX_SIZE = 10000;
@@ -34,7 +40,6 @@ public class Controller implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         graphLabel.setText("");
         arrSize = MIN_SIZE;
-
         setArrSize(MIN_SIZE);
 
         // Combo Box Setup
@@ -42,8 +47,10 @@ public class Controller implements Initializable {
         sortTypeComboBox.setItems(list);
         sortTypeComboBox.setOnAction(e -> {
             sorter = SortType.getSorterWithName(sortTypeComboBox.getSelectionModel().getSelectedItem());
-            if (sizeSpinner.isDisabled())
-                sizeSpinner.setDisable(false);
+
+            sizeSpinner.setDisable(false);
+            pseudocodeButton.setDisable(false);
+
             updateText();
         });
 
@@ -53,8 +60,42 @@ public class Controller implements Initializable {
         sizeSpinner.getValueFactory().setValue(MIN_SIZE);
         sizeSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
             setArrSize(newValue);
+            startButton.setDisable(true);
             updateText();
         });
+
+        // Buttons Setup
+        startButton.setOnAction(e -> sorter.sort()); //TODO Visualise the sorting live
+        randomizeButton.setOnAction(e -> randomize());
+    }
+
+    private boolean isSorted() {
+        for (int i = 1; i < arrSize; i++) {
+            if (nums[i] < nums[i-1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Randomizes the current array by swapping the element in each index
+     * with an element in a random index
+     */
+    private void randomize() {
+        Random rand = new Random();
+
+        for (int i = 0; i < arrSize; i++) {
+            int swap = rand.nextInt(arrSize - 1);
+            int temp = nums[i];
+
+            // Swap current element with an element of random index
+            nums[i] = nums[swap];
+            nums[swap] = temp;
+        }
+
+        startButton.setDisable(false);
+        updateBars();
     }
 
     /**
@@ -89,15 +130,14 @@ public class Controller implements Initializable {
     private void updateBars() {
         mainPane.getChildren().clear();
 
-        final double WIDTH = mainPane.getPrefWidth()/nums.length;
+        final double WIDTH = mainPane.getPrefWidth() / arrSize;
         final double HEIGHT = mainPane.getPrefHeight(); // Depends on elements position in array
-        final double LENGTH = nums.length;
 
         double x = 0; // Y value changes depending on height of the bar and so has no intial value
 
         // Create a bar for each element in the array
-        for (int i = 0; i < LENGTH; i++) {
-            double barHeight = (i + 1)*HEIGHT/LENGTH;
+        for (int num : nums) {
+            double barHeight = (num) * HEIGHT / arrSize;
             Rectangle bar = new Rectangle();
 
             bar.setX(x);
