@@ -1,4 +1,4 @@
-package com.pedrido.model;
+package com.pedrido.model.sort;
 
 /**
  * QuickSort is a divide and conquer algorithm and thus uses recursion.
@@ -40,6 +40,7 @@ public class QuickSorter extends Sorter {
 
     private int partition(int[] arr, int left, int right, int pivot) {
         while(left <= right) {
+
             // Keep moving left pointer until element is bigger than pivot
             while (arr[left] < pivot) {
                 left++;
@@ -52,19 +53,20 @@ public class QuickSorter extends Sorter {
 
             // Swap the positions of the left and right pointers
             if (left <= right) {
-                swap(arr, left, right);
+                int temp = arr[right];
+                arr[right] = arr[left];
+                arr[left] = temp;
+
                 left++;
                 right--;
+//                do {
+//                    System.out.println("loop");
+//                } while (lock);
+//                lock = true;
             }
         }
 
         // Left will be the partition point
         return left;
-    }
-
-    private void swap(int[] arr, int left, int right) {
-        int temp = arr[right];
-        arr[right] = arr[left];
-        arr[left] = temp;
     }
 }

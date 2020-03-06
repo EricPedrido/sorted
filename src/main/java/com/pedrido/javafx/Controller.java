@@ -1,7 +1,9 @@
 package com.pedrido.javafx;
 
-import com.pedrido.model.SortType;
-import com.pedrido.model.Sorter;
+import com.pedrido.model.Timer;
+import com.pedrido.model.sort.SortType;
+import com.pedrido.model.sort.Sorter;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -35,18 +37,26 @@ public class Controller implements Initializable {
     private Sorter sorter;
     private int[] nums;
     private int arrSize;
+    private Timer timer = Timer.getInstance();
+
+    private static Controller INSTANCE;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        INSTANCE = this;
         graphLabel.setText("");
         arrSize = MIN_SIZE;
         setArrSize(MIN_SIZE);
+
+        timerLabel.setText(timer.getSspTime().get());
+        timer.getSspTime().addListener(observable -> Platform.runLater(() -> timerLabel.setText(timer.getSspTime().get())));
 
         // Combo Box Setup
         ObservableList<String> list = FXCollections.observableArrayList(SortType.getValuesAsString());
         sortTypeComboBox.setItems(list);
         sortTypeComboBox.setOnAction(e -> {
             sorter = SortType.getSorterWithName(sortTypeComboBox.getSelectionModel().getSelectedItem());
+            setArrSize(MIN_SIZE);
 
             sizeSpinner.setDisable(false);
             pseudocodeButton.setDisable(false);
@@ -65,7 +75,11 @@ public class Controller implements Initializable {
         });
 
         // Buttons Setup
-        startButton.setOnAction(e -> sorter.sort(nums)); //TODO Visualise the sorting live
+        startButton.setOnAction(e ->  {
+            timer.startTimer(0);
+            sorter.sort(nums);
+            updateBars();
+        }); //TODO Visualise the sorting live
         randomizeButton.setOnAction(e -> randomize());
     }
 
@@ -94,8 +108,15 @@ public class Controller implements Initializable {
             nums[swap] = temp;
         }
 
-        startButton.setDisable(false);
+        startButton.setDisable(sizeSpinner.isDisable());
         updateBars();
+    }
+
+    /**
+     * Called when array is finished being sorted.
+     */
+    public void done() {
+        timer.stopTimer();
     }
 
     /**
@@ -127,13 +148,13 @@ public class Controller implements Initializable {
      * A live visualisation of the array size helps the user gauge how big the array is
      * that will be sorted.
      */
-    private void updateBars() {
+    public void updateBars() {
         mainPane.getChildren().clear();
 
         final double WIDTH = mainPane.getPrefWidth() / arrSize;
         final double HEIGHT = mainPane.getPrefHeight(); // Depends on elements position in array
 
-        double x = 0; // Y value changes depending on height of the bar and so has no intial value
+        double x = 0; // Y value changes depending on height of the bar and so has no initial value
 
         // Create a bar for each element in the array
         for (int num : nums) {
@@ -151,5 +172,20 @@ public class Controller implements Initializable {
             x += WIDTH;
         }
 
+        if (isSorted()) {
+            done();
+        }
     }
+
+    /**
+     * Makes the system wait for a certain amount of time
+     * (100 nanoseconds).
+     */ //TODO MAKE VISUALISATION SLEEP EVERY SWAP
+    public void sleep() {
+    }
+
+    public static Controller getInstance() {
+        return INSTANCE;
+    }
+
 }

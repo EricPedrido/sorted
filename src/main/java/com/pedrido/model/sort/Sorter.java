@@ -1,4 +1,9 @@
-package com.pedrido.model;
+package com.pedrido.model.sort;
+
+import com.pedrido.javafx.Controller;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Represents all classes which sort an array of numbers using
@@ -11,6 +16,7 @@ package com.pedrido.model;
  */
 public abstract class Sorter {
     private String displayableName;
+    protected final Controller controller = Controller.getInstance();
 
     Sorter(String name) {
         this.displayableName = name;
@@ -25,4 +31,14 @@ public abstract class Sorter {
     }
 
     public abstract void sort(int[] arr);
+
+    protected void pause() {
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.out.println("ping");
+                    }
+                }, 100);
+    }
 }

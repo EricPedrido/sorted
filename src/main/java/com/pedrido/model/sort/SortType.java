@@ -1,10 +1,11 @@
-package com.pedrido.model;
+package com.pedrido.model.sort;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public enum SortType {
-    QUICK_SORT(new QuickSorter("Quick Sort"));
+    QUICK_SORT(new QuickSorter("Quick Sort")),
+    BUBBLE_SORT(new BubbleSorter("Bubble Sort"));
 
     private Sorter sorter;
 
