@@ -53,9 +53,7 @@ public class QuickSorter extends Sorter {
 
             // Swap the positions of the left and right pointers
             if (left <= right) {
-                int temp = arr[right];
-                arr[right] = arr[left];
-                arr[left] = temp;
+                controller.swap(left, right);
 
                 left++;
                 right--;

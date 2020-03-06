@@ -16,6 +16,7 @@ import javafx.scene.shape.Rectangle;
 import java.net.URL;
 import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.TimerTask;
 
 public class Controller implements Initializable {
 
@@ -75,11 +76,11 @@ public class Controller implements Initializable {
         });
 
         // Buttons Setup
-        startButton.setOnAction(e ->  {
+        startButton.setOnAction(e -> {
             timer.startTimer(0);
             sorter.sort(nums);
             updateBars();
-        }); //TODO Visualise the sorting live
+        });
         randomizeButton.setOnAction(e -> randomize());
     }
 
@@ -177,11 +178,31 @@ public class Controller implements Initializable {
         }
     }
 
+    public void swap(int index, int swapIndex) {
+        int temp = nums[index];
+        nums[index] = nums[swapIndex];
+        nums[swapIndex] = temp;
+
+        sleep();
+    }
+
     /**
      * Makes the system wait for a certain amount of time
      * (100 nanoseconds).
      */ //TODO MAKE VISUALISATION SLEEP EVERY SWAP
     public void sleep() {
+        updateBars();
+
+        new java.util.Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.out.println("ping");
+                    }
+                }, 100);
+//        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), Event::consume));
+//        timeline.setCycleCount(Timeline.INDEFINITE);
+//        timeline.play();
     }
 
     public static Controller getInstance() {
