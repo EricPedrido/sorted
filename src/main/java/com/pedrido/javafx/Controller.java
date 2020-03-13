@@ -34,9 +34,9 @@ public class Controller implements Initializable {
     public Pane mainPane;
 
     private final int MIN_SIZE = 100;
-    private final int MAX_SIZE = 1000;
+    private final int MAX_SIZE = 500;
     private final int STEP_SIZE = 50;
-    private final int DEFAULT_DELAY = 5; // animation delay in milliseconds
+    private final int DEFAULT_DELAY = 10; // animation delay in milliseconds
 
     private Sorter sorter;
     private int[] nums;
@@ -45,6 +45,7 @@ public class Controller implements Initializable {
     private Timer timer = Timer.getInstance();
     private List<int[]> stateList = new ArrayList<>();
     private int delay = DEFAULT_DELAY;
+    private boolean sorted = false;
 
     private static Controller INSTANCE;
 
@@ -64,7 +65,6 @@ public class Controller implements Initializable {
         sortTypeComboBox.setOnAction(e -> {
             sorter = SortType.getSorterWithName(sortTypeComboBox.getSelectionModel().getSelectedItem());
             setArrSize(arrSize);
-            stateList = new ArrayList<>();
 
             sizeSpinner.setDisable(false);
             pseudocodeButton.setDisable(false);
@@ -85,8 +85,9 @@ public class Controller implements Initializable {
 
         // Buttons Setup
         startButton.setOnAction(e -> {
+            stateList = new ArrayList<>();
+            sorted = false;
             sorter.sort(nums);
-            updateBars();
         });
         randomizeButton.setOnAction(e -> randomize());
     }
@@ -98,11 +99,12 @@ public class Controller implements Initializable {
      */
     private void isSorted() {
         for (int i = 1; i < arrSize; i++) {
-            if (nums[i] < nums[i-1]) {
+            if (nums[i] < nums[i - 1]) {
                 return;
             }
         }
 
+        sorted = true;
         done();
     }
 
@@ -113,24 +115,24 @@ public class Controller implements Initializable {
      */
     private void done() {
         timer.startTimer(0);
+
         Task task = new Task() {
             @Override
             protected Object call() {
                 try {
-                    System.out.println(stateList.size());
                     for (int[] state : stateList) {
                         Platform.runLater(() -> updateBars(state));
                         Thread.sleep(delay);
                     }
+                } catch (InterruptedException ignored) {
                 }
-                catch (InterruptedException ignored) {
-
-                }return null;
+                return null;
             }
         };
 
         task.setOnSucceeded(e -> timer.stopTimer());
         new Thread(task).start();
+
     }
 
     /**
@@ -219,18 +221,29 @@ public class Controller implements Initializable {
     public void place(int element, int index) {
         nums[index] = element;
 
-        int[] tempArr = new int[arrSize];
-        System.arraycopy(nums, 0, tempArr, 0, arrSize);
-        stateList.add(tempArr);
-
-        isSorted();
+        saveState();
     }
 
     public void swap(int index, int swapIndex) {
         int temp = nums[index];
+        nums[index] = nums[swapIndex];
+        nums[swapIndex] = temp;
 
-        place(nums[swapIndex], index);
-        place(temp, swapIndex);
+
+//        place(nums[swapIndex], index);
+//        place(temp, swapIndex);
+
+        saveState();
+    }
+
+    private void saveState() {
+        int[] tempArr = new int[arrSize];
+        System.arraycopy(nums, 0, tempArr, 0, arrSize);
+        stateList.add(tempArr);
+
+        if (!sorted) {
+            isSorted();
+        }
     }
 
     public static Controller getInstance() {
