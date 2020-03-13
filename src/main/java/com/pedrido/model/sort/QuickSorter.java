@@ -57,10 +57,6 @@ public class QuickSorter extends Sorter {
 
                 left++;
                 right--;
-//                do {
-//                    System.out.println("loop");
-//                } while (lock);
-//                lock = true;
             }
         }
 

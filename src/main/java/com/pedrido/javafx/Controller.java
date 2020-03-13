@@ -3,20 +3,24 @@ package com.pedrido.javafx;
 import com.pedrido.model.Timer;
 import com.pedrido.model.sort.SortType;
 import com.pedrido.model.sort.Sorter;
+import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
 import java.net.URL;
-import java.util.Random;
-import java.util.ResourceBundle;
-import java.util.TimerTask;
+import java.util.*;
 
 public class Controller implements Initializable {
 
@@ -39,6 +43,7 @@ public class Controller implements Initializable {
     private int[] nums;
     private int arrSize;
     private Timer timer = Timer.getInstance();
+    private List<int[]> stateList = new ArrayList<>();
 
     private static Controller INSTANCE;
 
@@ -84,13 +89,13 @@ public class Controller implements Initializable {
         randomizeButton.setOnAction(e -> randomize());
     }
 
-    private boolean isSorted() {
+    private void isSorted() {
         for (int i = 1; i < arrSize; i++) {
             if (nums[i] < nums[i-1]) {
-                return false;
+                return;
             }
         }
-        return true;
+        done();
     }
 
     /**
@@ -118,6 +123,24 @@ public class Controller implements Initializable {
      */
     public void done() {
         timer.stopTimer();
+
+        Runnable task = () -> {
+            try {
+
+                System.out.println(stateList.size());
+                for (int[] state : stateList) {
+                    Platform.runLater(() -> {
+                        updateBars(state);
+                    });
+
+                    Thread.sleep(10);
+                }
+            }
+            catch (InterruptedException ignored) {
+
+            }
+        };
+        new Thread(task).start();
     }
 
     /**
@@ -150,6 +173,11 @@ public class Controller implements Initializable {
      * that will be sorted.
      */
     public void updateBars() {
+        updateBars(nums);
+    }
+
+    public void updateBars(int[] arr) {
+        System.out.println("ping");
         mainPane.getChildren().clear();
 
         final double WIDTH = mainPane.getPrefWidth() / arrSize;
@@ -158,7 +186,7 @@ public class Controller implements Initializable {
         double x = 0; // Y value changes depending on height of the bar and so has no initial value
 
         // Create a bar for each element in the array
-        for (int num : nums) {
+        for (int num : arr) {
             double barHeight = (num) * HEIGHT / arrSize;
             Rectangle bar = new Rectangle();
 
@@ -173,17 +201,53 @@ public class Controller implements Initializable {
             x += WIDTH;
         }
 
-        if (isSorted()) {
-            done();
-        }
     }
 
     public void swap(int index, int swapIndex) {
+
         int temp = nums[index];
         nums[index] = nums[swapIndex];
         nums[swapIndex] = temp;
 
-        sleep();
+        int[] tempArr = new int[arrSize];
+        System.arraycopy(nums, 0, tempArr, 0, arrSize);
+
+        stateList.add(tempArr);
+        //System.out.println(stateList.size());
+        isSorted();
+//        Timeline timer = new Timeline(
+//                new KeyFrame(Duration.millis(100), e -> updateBars())
+//        );
+//        timer.play();
+
+//        Task<Void> timer = new Task<>() {
+//            @Override
+//            protected Void call() {
+//                try {
+//                    Thread.sleep(100);
+//                } catch (InterruptedException ignored) {
+//                }
+//                return null;
+//            }
+//        };
+//        timer.setOnSucceeded(event -> updateBars());
+//        new Thread(timer).start();
+
+//        Runnable task = () -> {
+//            try {
+//                Platform.runLater(() -> {
+//                    updateBars();
+//                });
+//                System.out.println("ping");
+//                Thread.sleep(100);
+//            }
+//            catch (InterruptedException ignored) {
+//
+//            }
+//        };
+//        new Thread(task).start();
+
+        //sleep();
     }
 
     /**
@@ -193,13 +257,15 @@ public class Controller implements Initializable {
     public void sleep() {
         updateBars();
 
-        new java.util.Timer().schedule(
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        System.out.println("ping");
-                    }
-                }, 100);
+
+
+//        new java.util.Timer().schedule(
+//                new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        System.out.println("ping");
+//                    }
+//                }, 100);
 //        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), Event::consume));
 //        timeline.setCycleCount(Timeline.INDEFINITE);
 //        timeline.play();
