@@ -3,24 +3,22 @@ package com.pedrido.javafx;
 import com.pedrido.model.Timer;
 import com.pedrido.model.sort.SortType;
 import com.pedrido.model.sort.Sorter;
-import javafx.animation.KeyFrame;
-import javafx.animation.PauseTransition;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
@@ -36,14 +34,16 @@ public class Controller implements Initializable {
     public Pane mainPane;
 
     private final int MIN_SIZE = 100;
-    private final int MAX_SIZE = 10000;
+    private final int MAX_SIZE = 1000;
     private final int STEP_SIZE = 50;
+    private final int DEFAULT_DELAY = 10; // animation delay in milliseconds
 
     private Sorter sorter;
     private int[] nums;
     private int arrSize;
     private Timer timer = Timer.getInstance();
     private List<int[]> stateList = new ArrayList<>();
+    private int delay = DEFAULT_DELAY;
 
     private static Controller INSTANCE;
 
@@ -62,10 +62,12 @@ public class Controller implements Initializable {
         sortTypeComboBox.setItems(list);
         sortTypeComboBox.setOnAction(e -> {
             sorter = SortType.getSorterWithName(sortTypeComboBox.getSelectionModel().getSelectedItem());
-            setArrSize(MIN_SIZE);
+            setArrSize(arrSize);
+            stateList = new ArrayList<>();
 
             sizeSpinner.setDisable(false);
             pseudocodeButton.setDisable(false);
+            startButton.setDisable(true);
 
             updateText();
         });
@@ -82,7 +84,6 @@ public class Controller implements Initializable {
 
         // Buttons Setup
         startButton.setOnAction(e -> {
-            timer.startTimer(0);
             sorter.sort(nums);
             updateBars();
         });
@@ -120,26 +121,28 @@ public class Controller implements Initializable {
 
     /**
      * Called when array is finished being sorted.
+     * This method visualizes the sorting algorithm by playing back each state
+     * of the sort with a delay (variable)
      */
-    public void done() {
-        timer.stopTimer();
-
-        Runnable task = () -> {
-            try {
-
-                System.out.println(stateList.size());
-                for (int[] state : stateList) {
-                    Platform.runLater(() -> {
-                        updateBars(state);
-                    });
-
-                    Thread.sleep(10);
+    private void done() {
+        timer.startTimer(0);
+        Task task = new Task() {
+            @Override
+            protected Object call() {
+                try {
+                    System.out.println(stateList.size());
+                    for (int[] state : stateList) {
+                        Platform.runLater(() -> updateBars(state));
+                        Thread.sleep(delay);
+                    }
                 }
-            }
-            catch (InterruptedException ignored) {
+                catch (InterruptedException ignored) {
 
+                }return null;
             }
         };
+
+        task.setOnSucceeded(e -> timer.stopTimer());
         new Thread(task).start();
     }
 
@@ -172,12 +175,11 @@ public class Controller implements Initializable {
      * A live visualisation of the array size helps the user gauge how big the array is
      * that will be sorted.
      */
-    public void updateBars() {
+    private void updateBars() {
         updateBars(nums);
     }
 
-    public void updateBars(int[] arr) {
-        System.out.println("ping");
+    private void updateBars(int[] arr) {
         mainPane.getChildren().clear();
 
         final double WIDTH = mainPane.getPrefWidth() / arrSize;
@@ -204,7 +206,6 @@ public class Controller implements Initializable {
     }
 
     public void swap(int index, int swapIndex) {
-
         int temp = nums[index];
         nums[index] = nums[swapIndex];
         nums[swapIndex] = temp;
@@ -213,62 +214,8 @@ public class Controller implements Initializable {
         System.arraycopy(nums, 0, tempArr, 0, arrSize);
 
         stateList.add(tempArr);
-        //System.out.println(stateList.size());
+
         isSorted();
-//        Timeline timer = new Timeline(
-//                new KeyFrame(Duration.millis(100), e -> updateBars())
-//        );
-//        timer.play();
-
-//        Task<Void> timer = new Task<>() {
-//            @Override
-//            protected Void call() {
-//                try {
-//                    Thread.sleep(100);
-//                } catch (InterruptedException ignored) {
-//                }
-//                return null;
-//            }
-//        };
-//        timer.setOnSucceeded(event -> updateBars());
-//        new Thread(timer).start();
-
-//        Runnable task = () -> {
-//            try {
-//                Platform.runLater(() -> {
-//                    updateBars();
-//                });
-//                System.out.println("ping");
-//                Thread.sleep(100);
-//            }
-//            catch (InterruptedException ignored) {
-//
-//            }
-//        };
-//        new Thread(task).start();
-
-        //sleep();
-    }
-
-    /**
-     * Makes the system wait for a certain amount of time
-     * (100 nanoseconds).
-     */ //TODO MAKE VISUALISATION SLEEP EVERY SWAP
-    public void sleep() {
-        updateBars();
-
-
-
-//        new java.util.Timer().schedule(
-//                new TimerTask() {
-//                    @Override
-//                    public void run() {
-//                        System.out.println("ping");
-//                    }
-//                }, 100);
-//        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), Event::consume));
-//        timeline.setCycleCount(Timeline.INDEFINITE);
-//        timeline.play();
     }
 
     public static Controller getInstance() {
