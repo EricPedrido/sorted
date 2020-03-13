@@ -1,5 +1,12 @@
 package com.pedrido.model.sort;
 
+/**
+ * BubbleSort is a very simple sorting algorithm which
+ * iterates through the array and if element 'n' is
+ * greater than 'n + 1', then their positions are swapped.
+ *
+ * @author Eric Pedrido
+ */
 public class BubbleSorter extends Sorter {
 
     BubbleSorter(String name) {

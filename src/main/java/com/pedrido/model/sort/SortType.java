@@ -5,7 +5,8 @@ import java.util.List;
 
 public enum SortType {
     QUICK_SORT(new QuickSorter("Quick Sort")),
-    BUBBLE_SORT(new BubbleSorter("Bubble Sort"));
+    BUBBLE_SORT(new BubbleSorter("Bubble Sort")),
+    INSERTION_SORT(new InsertionSorter("Insertion Sort"));
 
     private Sorter sorter;
 

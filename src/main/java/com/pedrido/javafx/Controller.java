@@ -36,11 +36,12 @@ public class Controller implements Initializable {
     private final int MIN_SIZE = 100;
     private final int MAX_SIZE = 1000;
     private final int STEP_SIZE = 50;
-    private final int DEFAULT_DELAY = 10; // animation delay in milliseconds
+    private final int DEFAULT_DELAY = 5; // animation delay in milliseconds
 
     private Sorter sorter;
     private int[] nums;
     private int arrSize;
+
     private Timer timer = Timer.getInstance();
     private List<int[]> stateList = new ArrayList<>();
     private int delay = DEFAULT_DELAY;
@@ -90,33 +91,19 @@ public class Controller implements Initializable {
         randomizeButton.setOnAction(e -> randomize());
     }
 
+    /**
+     * Checks if the sorting algorithm is complete, whereby
+     * it visualizes a replay of each step it took in
+     * {@link #done()}
+     */
     private void isSorted() {
         for (int i = 1; i < arrSize; i++) {
             if (nums[i] < nums[i-1]) {
                 return;
             }
         }
+
         done();
-    }
-
-    /**
-     * Randomizes the current array by swapping the element in each index
-     * with an element in a random index
-     */
-    private void randomize() {
-        Random rand = new Random();
-
-        for (int i = 0; i < arrSize; i++) {
-            int swap = rand.nextInt(arrSize - 1);
-            int temp = nums[i];
-
-            // Swap current element with an element of random index
-            nums[i] = nums[swap];
-            nums[swap] = temp;
-        }
-
-        startButton.setDisable(sizeSpinner.isDisable());
-        updateBars();
     }
 
     /**
@@ -144,6 +131,26 @@ public class Controller implements Initializable {
 
         task.setOnSucceeded(e -> timer.stopTimer());
         new Thread(task).start();
+    }
+
+    /**
+     * Randomizes the current array by swapping the element in each index
+     * with an element in a random index
+     */
+    private void randomize() {
+        Random rand = new Random();
+
+        for (int i = 0; i < arrSize; i++) {
+            int swap = rand.nextInt(arrSize - 1);
+            int temp = nums[i];
+
+            // Swap current element with an element of random index
+            nums[i] = nums[swap];
+            nums[swap] = temp;
+        }
+
+        startButton.setDisable(sizeSpinner.isDisable());
+        updateBars();
     }
 
     /**
@@ -205,17 +212,25 @@ public class Controller implements Initializable {
 
     }
 
-    public void swap(int index, int swapIndex) {
-        int temp = nums[index];
-        nums[index] = nums[swapIndex];
-        nums[swapIndex] = temp;
+    /**
+     * Places an element into the array at the given index.
+     * Also adds this placement into the state list.
+     */
+    public void place(int element, int index) {
+        nums[index] = element;
 
         int[] tempArr = new int[arrSize];
         System.arraycopy(nums, 0, tempArr, 0, arrSize);
-
         stateList.add(tempArr);
 
         isSorted();
+    }
+
+    public void swap(int index, int swapIndex) {
+        int temp = nums[index];
+
+        place(nums[swapIndex], index);
+        place(temp, swapIndex);
     }
 
     public static Controller getInstance() {
