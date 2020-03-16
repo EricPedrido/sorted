@@ -3,6 +3,8 @@ package com.pedrido.javafx;
 import com.pedrido.model.sort.SortType;
 import com.pedrido.model.sort.Sorter;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -14,6 +16,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +26,7 @@ public class Controller implements Initializable {
 
     @FXML
     public Label graphLabel, percentageLabel, arraySwapLabel,
-            startLabel, pauseLabel, startIndicatorLabel, skipLabel, repeatLabel;
+            startLabel, pauseLabel, infoLabel, skipLabel, repeatLabel;
     @FXML
     public ComboBox<String> sortTypeComboBox;
     @FXML
@@ -38,14 +41,14 @@ public class Controller implements Initializable {
     private final int MIN_SIZE = 100;
     private final int MAX_SIZE = 500;
     private final int STEP_SIZE = 50;
-    private final int DEFAULT_DELAY = 10; // animation delay in milliseconds
+    private final int DELAY_VARIABLE = 200; // Larger number = longer delays on the slider
 
     private Sorter sorter;
     private int[] nums;
     private int arrSize;
 
     private List<int[]> stateList = new ArrayList<>();
-    private int delay = DEFAULT_DELAY;
+    private int delay;
     private boolean sorted = false;
     private boolean run = true;
     private int curState;
@@ -55,16 +58,19 @@ public class Controller implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         INSTANCE = this;
+        delay = DELAY_VARIABLE/(int)speedSlider.getValue();
         graphLabel.setText("");
+        infoLabel.setText("Select an algorithm");
         arrSize = MIN_SIZE;
         setArrSize(MIN_SIZE);
 
-        // Combo Box Setup
+        // Sort Type Combo Box Setup
         ObservableList<String> list = FXCollections.observableArrayList(SortType.getValuesAsString());
         sortTypeComboBox.setItems(list);
         sortTypeComboBox.setOnAction(e -> {
             sorter = SortType.getSorterWithName(sortTypeComboBox.getSelectionModel().getSelectedItem());
             setArrSize(arrSize);
+            infoLabel.setText("Randomize the array");
 
             sizeSpinner.setDisable(false);
             setButtonDisable(false);
@@ -74,15 +80,22 @@ public class Controller implements Initializable {
             updateText();
         });
 
-        // Spinner Setup
+        // Array Size Spinner Setup
         sizeSpinner.setValueFactory(
                 new SpinnerValueFactory.IntegerSpinnerValueFactory(MIN_SIZE, MAX_SIZE, MIN_SIZE, STEP_SIZE));
         sizeSpinner.getValueFactory().setValue(MIN_SIZE);
         sizeSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
             setArrSize(newValue);
+            infoLabel.setText("Randomize the array");
             startLabel.setDisable(true);
             updateText();
         });
+
+        // Speed Slider Setup
+        speedSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            delay = DELAY_VARIABLE/newValue.intValue();
+        });
+
 
         // Clickable Label Setup
         startLabel.setOnMouseClicked(e -> {
@@ -92,17 +105,22 @@ public class Controller implements Initializable {
                 sorter.sort(nums);
             }
 
+            infoLabel.setText("Sorting array");
             setMediaLabelDisable(false);
             setButtonDisable(true);
             setStartVisible(false);
 
             run = true;
         });
-        pauseLabel.setOnMouseClicked(e -> run = false);
+        pauseLabel.setOnMouseClicked(e -> {
+            run = false;
+            infoLabel.setText("Paused");
+        });
         randomizeButton.setOnAction(e -> {
-            randomize();
-            sorted = false;
             stateList = new ArrayList<>();
+            sorted = false;
+            infoLabel.setText("Press Play!");
+            randomize();
         });
     }
 
@@ -178,6 +196,7 @@ public class Controller implements Initializable {
                 setMediaLabelDisable(true);
                 setButtonDisable(false);
                 percentageLabel.setText("100%");
+                infoLabel.setText("Pick another algorithm and do it again");
             } else {
                 setButtonDisable(true);
             }
