@@ -13,6 +13,20 @@
     -fx-font-weight: bold;
 }
 
+.media-element:hover {
+    -fx-text-fill: #ffffff;
+}
+
+.start {
+    -fx-font-size: 65px;
+    -fx-text-fill: #0bf400;
+}
+
+.stop {
+    -fx-font-size: 45px;
+    -fx-text-fill: #00daff;
+}
+
 .small-text {
     -fx-font-size: 15px;
 }

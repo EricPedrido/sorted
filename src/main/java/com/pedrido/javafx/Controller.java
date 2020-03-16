@@ -1,6 +1,5 @@
 package com.pedrido.javafx;
 
-import com.pedrido.model.Timer;
 import com.pedrido.model.sort.SortType;
 import com.pedrido.model.sort.Sorter;
 import javafx.application.Platform;
@@ -23,13 +22,15 @@ import java.util.ResourceBundle;
 public class Controller implements Initializable {
 
     @FXML
-    public Label graphLabel, timerLabel;
+    public Label graphLabel, percentageLabel, startLabel, pauseLabel, startIndicatorLabel, skipLabel, repeatLabel;
     @FXML
     public ComboBox<String> sortTypeComboBox;
     @FXML
-    public Button startButton, pseudocodeButton, randomizeButton;
+    public Button pseudocodeButton, randomizeButton;
     @FXML
     public Spinner<Integer> sizeSpinner;
+    @FXML
+    public Slider speedSlider;
     @FXML
     public Pane mainPane;
 
@@ -42,10 +43,11 @@ public class Controller implements Initializable {
     private int[] nums;
     private int arrSize;
 
-    private Timer timer = Timer.getInstance();
     private List<int[]> stateList = new ArrayList<>();
     private int delay = DEFAULT_DELAY;
     private boolean sorted = false;
+    private boolean run = true;
+    private int curState;
 
     private static Controller INSTANCE;
 
@@ -56,9 +58,6 @@ public class Controller implements Initializable {
         arrSize = MIN_SIZE;
         setArrSize(MIN_SIZE);
 
-        timerLabel.setText(timer.getSspTime().get());
-        timer.getSspTime().addListener(observable -> Platform.runLater(() -> timerLabel.setText(timer.getSspTime().get())));
-
         // Combo Box Setup
         ObservableList<String> list = FXCollections.observableArrayList(SortType.getValuesAsString());
         sortTypeComboBox.setItems(list);
@@ -67,8 +66,9 @@ public class Controller implements Initializable {
             setArrSize(arrSize);
 
             sizeSpinner.setDisable(false);
+            setButtonDisable(false);
+            setMediaLabelDisable(true);
             pseudocodeButton.setDisable(false);
-            startButton.setDisable(true);
 
             updateText();
         });
@@ -79,17 +79,47 @@ public class Controller implements Initializable {
         sizeSpinner.getValueFactory().setValue(MIN_SIZE);
         sizeSpinner.valueProperty().addListener((obs, oldValue, newValue) -> {
             setArrSize(newValue);
-            startButton.setDisable(true);
+            startLabel.setDisable(true);
             updateText();
         });
 
-        // Buttons Setup
-        startButton.setOnAction(e -> {
-            stateList = new ArrayList<>();
-            sorted = false;
-            sorter.sort(nums);
+        // Clickable Label Setup
+        startLabel.setOnMouseClicked(e -> {
+            if (!run) {
+                done();
+            } else {
+                sorter.sort(nums);
+            }
+
+            setMediaLabelDisable(false);
+            setButtonDisable(true);
+            setStartVisible(false);
+
+            run = true;
         });
-        randomizeButton.setOnAction(e -> randomize());
+        pauseLabel.setOnMouseClicked(e -> run = false);
+        randomizeButton.setOnAction(e -> {
+            randomize();
+            sorted = false;
+            stateList = new ArrayList<>();
+        });
+    }
+
+    private void setButtonDisable(boolean disable) {
+        sortTypeComboBox.setDisable(disable);
+        sizeSpinner.setDisable(disable);
+        randomizeButton.setDisable(disable);
+    }
+
+    private void setMediaLabelDisable(boolean disable) {
+        startLabel.setDisable(disable);
+        skipLabel.setDisable(disable);
+        repeatLabel.setDisable(disable);
+    }
+
+    private void setStartVisible(boolean visible) {
+        startLabel.setVisible(visible);
+        pauseLabel.setVisible(!visible);
     }
 
     /**
@@ -114,15 +144,19 @@ public class Controller implements Initializable {
      * of the sort with a delay (variable)
      */
     private void done() {
-        timer.startTimer(0);
-
         Task task = new Task() {
             @Override
             protected Object call() {
                 try {
-                    for (int[] state : stateList) {
-                        Platform.runLater(() -> updateBars(state));
-                        Thread.sleep(delay);
+                    for (int i = curState; i < stateList.size(); i++) {
+                        int[] state = stateList.get(i);
+                        if (run) {
+                            Platform.runLater(() -> updateBars(state));
+                            Thread.sleep(delay);
+                        } else {
+                            curState = i;
+                            break;
+                        }
                     }
                 } catch (InterruptedException ignored) {
                 }
@@ -130,9 +164,18 @@ public class Controller implements Initializable {
             }
         };
 
-        task.setOnSucceeded(e -> timer.stopTimer());
-        new Thread(task).start();
+        task.setOnSucceeded(e -> {
+            setStartVisible(true);
 
+            if (run) {
+                curState = 0;
+                setMediaLabelDisable(true);
+                setButtonDisable(false);
+            } else {
+                setButtonDisable(true);
+            }
+        });
+        new Thread(task).start();
     }
 
     /**
@@ -151,7 +194,7 @@ public class Controller implements Initializable {
             nums[swap] = temp;
         }
 
-        startButton.setDisable(sizeSpinner.isDisable());
+        startLabel.setDisable(sizeSpinner.isDisable());
         updateBars();
     }
 
@@ -228,10 +271,6 @@ public class Controller implements Initializable {
         int temp = nums[index];
         nums[index] = nums[swapIndex];
         nums[swapIndex] = temp;
-
-
-//        place(nums[swapIndex], index);
-//        place(temp, swapIndex);
 
         saveState();
     }
