@@ -82,7 +82,7 @@
                      <children>
                         <Button fx:id="pseudocodeButton" disable="true" layoutY="62.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="115.0" styleClass="small-text" stylesheets="@styles.css" text="Pseudocode" />
                         <Button fx:id="randomizeButton" disable="true" layoutY="21.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="115.0" styleClass="small-text" stylesheets="@styles.css" text="Randomize" />
-                        <Label fx:id="percentageLabel" alignment="CENTER" layoutX="275.0" layoutY="14.0" prefHeight="51.0" prefWidth="115.0" styleClass="timer-label" text="0%" />
+                        <Label fx:id="percentageLabel" alignment="CENTER" layoutX="275.0" layoutY="14.0" prefHeight="51.0" prefWidth="115.0" styleClass="percent-text" text="0%" />
                         <Label layoutX="191.0" layoutY="25.0" prefHeight="30.0" prefWidth="83.0" text="Progress:" />
                         <Label fx:id="arraySwapLabel" alignment="CENTER" layoutX="275.0" layoutY="52.0" prefHeight="51.0" prefWidth="115.0" styleClass="timer-label" text="--" />
                         <Label layoutX="159.0" layoutY="63.0" prefHeight="30.0" prefWidth="115.0" text="Array Swaps:" />

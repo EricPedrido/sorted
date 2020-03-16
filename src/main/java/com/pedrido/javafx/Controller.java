@@ -22,7 +22,8 @@ import java.util.ResourceBundle;
 public class Controller implements Initializable {
 
     @FXML
-    public Label graphLabel, percentageLabel, startLabel, pauseLabel, startIndicatorLabel, skipLabel, repeatLabel;
+    public Label graphLabel, percentageLabel, arraySwapLabel,
+            startLabel, pauseLabel, startIndicatorLabel, skipLabel, repeatLabel;
     @FXML
     public ComboBox<String> sortTypeComboBox;
     @FXML
@@ -150,8 +151,13 @@ public class Controller implements Initializable {
                 try {
                     for (int i = curState; i < stateList.size(); i++) {
                         int[] state = stateList.get(i);
+                        double stateNum = i;
                         if (run) {
-                            Platform.runLater(() -> updateBars(state));
+                            Platform.runLater(() ->  {
+                                updateBars(state);
+                                percentageLabel.setText(Math.round((stateNum/stateList.size())*100) + "%");
+                                arraySwapLabel.setText(Integer.toString((int) stateNum));
+                            });
                             Thread.sleep(delay);
                         } else {
                             curState = i;
@@ -171,6 +177,7 @@ public class Controller implements Initializable {
                 curState = 0;
                 setMediaLabelDisable(true);
                 setButtonDisable(false);
+                percentageLabel.setText("100%");
             } else {
                 setButtonDisable(true);
             }
