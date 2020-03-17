@@ -3,8 +3,6 @@ package com.pedrido.javafx;
 import com.pedrido.model.sort.SortType;
 import com.pedrido.model.sort.Sorter;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -16,7 +14,6 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 import java.net.URL;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -41,7 +38,7 @@ public class Controller implements Initializable {
     private final int MIN_SIZE = 100;
     private final int MAX_SIZE = 500;
     private final int STEP_SIZE = 50;
-    private final int DELAY_VARIABLE = 200; // Larger number = longer delays on the slider
+    private final int DELAY_VARIABLE = 100; // Larger number = longer delays on the slider. Minimum 100
 
     private Sorter sorter;
     private int[] nums;
@@ -49,6 +46,7 @@ public class Controller implements Initializable {
 
     private List<int[]> stateList = new ArrayList<>();
     private int delay;
+    private int nanoDelay = 0;
     private boolean sorted = false;
     private boolean run = true;
     private int curState;
@@ -116,12 +114,21 @@ public class Controller implements Initializable {
             run = false;
             infoLabel.setText("Paused");
         });
+        skipLabel.setOnMouseClicked(e -> {
+            curState = 0;
+            stateList = new ArrayList<>();
+            done();
+            setArrSize(arrSize);
+        });
+
+        // Button Setup
         randomizeButton.setOnAction(e -> {
             stateList = new ArrayList<>();
             sorted = false;
             infoLabel.setText("Press Play!");
             randomize();
         });
+
     }
 
     private void setButtonDisable(boolean disable) {
@@ -176,7 +183,7 @@ public class Controller implements Initializable {
                                 percentageLabel.setText(Math.round((stateNum/stateList.size())*100) + "%");
                                 arraySwapLabel.setText(Integer.toString((int) stateNum));
                             });
-                            Thread.sleep(delay);
+                            Thread.sleep(delay, nanoDelay);
                         } else {
                             curState = i;
                             break;
