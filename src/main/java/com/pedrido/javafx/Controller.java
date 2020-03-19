@@ -115,10 +115,11 @@ public class Controller implements Initializable {
             infoLabel.setText("Paused");
         });
         skipLabel.setOnMouseClicked(e -> {
+            run = true;
             curState = 0;
             stateList = new ArrayList<>();
-            done();
             setArrSize(arrSize);
+            done();
         });
 
         // Button Setup
@@ -204,6 +205,7 @@ public class Controller implements Initializable {
                 setButtonDisable(false);
                 percentageLabel.setText("100%");
                 infoLabel.setText("Pick another algorithm and do it again");
+                setArrSize(arrSize);
             } else {
                 setButtonDisable(true);
             }
